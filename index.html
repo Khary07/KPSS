@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#7c5cff">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Günlük Programım</title>
+<style>
+:root {
+  --bg:#0f0f12; --card:#1a1a20; --card2:#202028;
+  --accent:#7c5cff; --accent2:#4cd97b; --accent3:#ffb454;
+  --text:#f0f0f5; --muted:#9a9aa5; --border:#2c2c36; --danger:#e05c5c;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);padding:16px;padding-bottom:80px;overflow-x:hidden;word-break:break-word;}
+h1{font-size:1.35rem;margin:8px 0 2px;}
+.subtitle{color:var(--muted);font-size:0.82rem;margin-bottom:14px;}
+
+.module-tabs{display:flex;gap:8px;margin-bottom:16px;}
+.module-tab{flex:1;padding:12px 4px;border-radius:12px;border:1px solid var(--border);background:var(--card);color:var(--muted);font-size:0.8rem;font-weight:600;cursor:pointer;text-align:center;}
+.module-tab.active.sport{background:var(--accent2);border-color:var(--accent2);color:#0f0f12;}
+.module-tab.active.study{background:var(--accent);border-color:var(--accent);color:var(--text);}
+.module-tab.active.topics{background:var(--accent3);border-color:var(--accent3);color:#0f0f12;}
+
+.week-tabs{display:flex;gap:8px;margin-bottom:10px;}
+.week-tab{flex:1;padding:10px 4px;border-radius:12px;border:1px solid var(--border);background:var(--card);color:var(--muted);font-size:0.85rem;font-weight:600;cursor:pointer;text-align:center;}
+.week-tab.active{background:var(--accent);border-color:var(--accent);color:var(--text);}
+
+.day-selector{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:14px;}
+.day-selector::-webkit-scrollbar{display:none;}
+.day-btn{flex:0 0 auto;padding:8px 14px;border-radius:20px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:0.85rem;cursor:pointer;}
+.day-btn.active{background:var(--accent);border-color:var(--accent);font-weight:600;}
+
+.cycle-badge{text-align:center;font-size:0.78rem;color:var(--muted);margin-bottom:14px;}
+.cycle-badge .tag{display:inline-block;padding:2px 10px;border-radius:10px;background:var(--card2);color:var(--accent2);font-weight:700;margin-left:4px;}
+
+.progress-bar{height:6px;background:var(--border);border-radius:3px;margin-bottom:6px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--accent2);width:0%;transition:width 0.3s;}
+.progress-text{text-align:center;color:var(--muted);font-size:0.78rem;margin-bottom:14px;}
+
+.section{background:var(--card);border-radius:14px;margin-bottom:14px;overflow:hidden;border:1px solid var(--border);}
+.section-header{padding:12px 16px;font-weight:700;font-size:1rem;display:flex;justify-content:space-between;align-items:center;background:var(--card2);}
+.section-header .badge{font-size:0.7rem;color:var(--muted);font-weight:400;}
+.note-box{background:var(--card2);border-left:3px solid var(--accent);padding:10px 14px;border-radius:8px;font-size:0.8rem;color:var(--muted);margin:12px 16px 0;line-height:1.4;}
+
+.exercise{padding:12px 16px;border-top:1px solid var(--border);}
+.ex-row{display:flex;align-items:flex-start;gap:12px;}
+.exercise input[type="checkbox"]{width:22px;height:22px;margin-top:2px;accent-color:var(--accent2);flex-shrink:0;}
+.exercise label{flex:1;}
+.ex-name{font-weight:600;font-size:0.95rem;overflow-wrap:break-word;}
+.ex-reps{color:var(--accent2);font-size:0.85rem;margin-top:2px;}
+.ex-note{color:var(--muted);font-size:0.78rem;margin-top:4px;line-height:1.3;}
+.checked .ex-name{text-decoration:line-through;color:var(--muted);}
+
+/* SPOR ZAMANLAYICI */
+.sport-timer{margin-top:8px;padding:8px 12px;background:var(--card2);border-radius:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.sport-timer-display{font-size:1.3rem;font-weight:700;font-variant-numeric:tabular-nums;min-width:60px;}
+.sport-timer-display.idle{color:var(--muted);}
+.sport-timer-display.running{color:var(--accent2);}
+.sport-timer-display.done{color:var(--accent3);}
+.st-btn{padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;font-size:0.78rem;cursor:pointer;}
+.st-btn.start{border-color:var(--accent2);color:var(--accent2);}
+.st-btn.stop{border-color:var(--danger);color:var(--danger);}
+.st-btn.reset{border-color:var(--muted);color:var(--muted);}
+
+/* DERS BLOK */
+.block{padding:12px 16px;border-top:1px solid var(--border);}
+.block-inner{display:flex;align-items:flex-start;gap:12px;}
+.block input[type="checkbox"]{width:22px;height:22px;margin-top:2px;accent-color:var(--accent);flex-shrink:0;}
+.block label{flex:1;cursor:pointer;}
+.block-time{color:var(--accent3);font-size:0.78rem;font-weight:700;margin-bottom:2px;}
+.block-name{font-weight:600;font-size:0.95rem;overflow-wrap:break-word;}
+.block-note{color:var(--muted);font-size:0.78rem;margin-top:3px;line-height:1.3;}
+.block.optional{opacity:0.8;}
+.block.optional .block-time::after{content:" · esnek";color:var(--muted);font-weight:400;}
+.block.checked .block-name{text-decoration:line-through;color:var(--muted);}
+.block-type-study{border-left:3px solid var(--accent);}
+.block-type-sport{border-left:3px solid var(--accent2);}
+.block-type-break{border-left:3px solid var(--border);}
+.block-type-meal{border-left:3px solid var(--accent3);}
+
+/* DERS ZAMANLAYICI */
+.ders-timer{margin-top:8px;padding:8px 12px;background:var(--card2);border-radius:8px;}
+.ders-timer-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.ders-timer-display{font-size:1.5rem;font-weight:700;font-variant-numeric:tabular-nums;min-width:74px;}
+.ders-timer-display.idle{color:var(--muted);}
+.ders-timer-display.running{color:var(--accent2);}
+.ders-timer-display.paused{color:var(--accent3);}
+.ders-timer-display.done{color:var(--danger);}
+.dt-btn{padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:transparent;font-size:0.82rem;cursor:pointer;}
+.dt-btn.pause{border-color:var(--accent3);color:var(--accent3);}
+.dt-btn.resume{border-color:var(--accent2);color:var(--accent2);}
+.dt-btn.snooze{border-color:var(--muted);color:var(--muted);}
+.dt-hint{font-size:0.72rem;color:var(--muted);margin-top:4px;}
+
+.reset-btn{width:100%;padding:12px;border-radius:12px;border:1px solid var(--border);background:var(--card);color:var(--muted);font-size:0.9rem;margin-top:10px;cursor:pointer;}
+
+/* KONU TAKİBİ */
+.subject-card{background:var(--card);border-radius:14px;margin-bottom:12px;border:1px solid var(--border);overflow:hidden;}
+.subject-header{padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;background:var(--card2);}
+.subject-icon{font-size:1.2rem;}
+.subject-title{flex:1;font-weight:700;font-size:1rem;}
+.subject-title.done{text-decoration:line-through;color:var(--muted);}
+.subject-meta{font-size:0.72rem;color:var(--muted);}
+.subject-arrow{font-size:0.9rem;color:var(--muted);transition:transform 0.2s;}
+.subject-arrow.open{transform:rotate(90deg);}
+.congrats{font-size:0.78rem;color:var(--accent2);font-weight:600;}
+.topics-list{display:none;}
+.topics-list.open{display:block;}
+.topic-item{padding:11px 16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+.topic-item input[type="checkbox"]{width:20px;height:20px;accent-color:var(--accent3);flex-shrink:0;}
+.topic-label{font-size:0.92rem;flex:1;overflow-wrap:break-word;}
+.topic-label.done{text-decoration:line-through;color:var(--muted);}
+.topic-soru{font-size:0.7rem;color:var(--muted);display:block;margin-top:1px;}
+.subject-reset-row{padding:10px 16px;border-top:1px solid var(--border);}
+.subject-reset-btn{font-size:0.75rem;color:var(--muted);background:transparent;border:1px solid var(--border);border-radius:8px;padding:5px 10px;cursor:pointer;}
+
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--accent2);color:var(--text);padding:10px 20px;border-radius:12px;font-size:0.85rem;z-index:200;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;max-width:90vw;}
+.toast.show{opacity:1;}
+</style>
+</head>
+<body>
+<h1 id="mainTitle">📋 Günlük Programım</h1>
+<div class="subtitle" id="mainSubtitle">Spor, ders ve konu takibi</div>
+<div class="module-tabs">
+  <button class="module-tab sport active" id="tabSport">🏋️ Spor</button>
+  <button class="module-tab study" id="tabStudy">📚 Ders</button>
+  <button class="module-tab topics" id="tabTopics">📖 Konular</button>
+</div>
+<div id="moduleContainer"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== UTILS ===== */
+function ls(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+function lsDel(k){try{localStorage.removeItem(k);}catch(e){}}
+
+function showToast(msg,dur=2500){
+  const t=document.getElementById("toast");
+  t.textContent=msg; t.classList.add("show");
+  clearTimeout(t._tid); t._tid=setTimeout(()=>t.classList.remove("show"),dur);
+}
+
+/* ===== SES + WAKELOCK ===== */
+let wakeLock=null;
+async function requestWakeLock(){
+  try{ if("wakeLock" in navigator){ wakeLock=await navigator.wakeLock.request("screen"); } }catch(e){}
+}
+function releaseWakeLock(){
+  try{ if(wakeLock){ wakeLock.release(); wakeLock=null; } }catch(e){}
+}
+
+// Döngüsel alarm state
+let alarmInterval=null;
+let alarmAudioCtx=null;
+
+function playSoftBeep(){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const osc=ctx.createOscillator();
+    const gain=ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    // Yumuşak ama dikkat çekici: iki kısa not art arda
+    osc.type="sine";
+    osc.frequency.setValueAtTime(740,ctx.currentTime);
+    gain.gain.setValueAtTime(0,ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0.45,ctx.currentTime+0.05);
+    gain.gain.setValueAtTime(0.45,ctx.currentTime+0.18);
+    gain.gain.linearRampToValueAtTime(0,ctx.currentTime+0.28);
+    osc.frequency.setValueAtTime(920,ctx.currentTime+0.32);
+    gain.gain.linearRampToValueAtTime(0.4,ctx.currentTime+0.37);
+    gain.gain.setValueAtTime(0.4,ctx.currentTime+0.52);
+    gain.gain.linearRampToValueAtTime(0,ctx.currentTime+0.65);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime+0.7);
+  }catch(e){}
+}
+
+function startAlarm(label){
+  stopAlarm(); // öncekini durdur
+  requestWakeLock();
+  showAlarmOverlay(label);
+  playSoftBeep();
+  alarmInterval=setInterval(()=>{ playSoftBeep(); }, 2500);
+}
+
+function stopAlarm(){
+  if(alarmInterval){ clearInterval(alarmInterval); alarmInterval=null; }
+  hideAlarmOverlay();
+  releaseWakeLock();
+}
+
+function showAlarmOverlay(label){
+  let ov=document.getElementById("alarmOverlay");
+  if(!ov){
+    ov=document.createElement("div"); ov.id="alarmOverlay";
+    ov.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:32px;";
+    document.body.appendChild(ov);
+  }
+  ov.innerHTML=`
+    <div style="font-size:3rem;">⏰</div>
+    <div style="font-size:1.3rem;font-weight:700;color:#f0f0f5;text-align:center;">${label}</div>
+    <div style="font-size:1rem;color:#9a9aa5;text-align:center;">Süre doldu!</div>
+    <button onclick="stopAlarm()" style="margin-top:8px;padding:18px 48px;border-radius:16px;border:none;background:#4cd97b;color:#0f0f12;font-size:1.2rem;font-weight:700;cursor:pointer;">⏹ Durdur</button>
+  `;
+  ov.style.display="flex";
+}
+
+function hideAlarmOverlay(){
+  const ov=document.getElementById("alarmOverlay");
+  if(ov) ov.style.display="none";
+}
+
+function playBeep(type="done"){
+  // Artık kullanılmıyor, ama geriye dönük uyumluluk için burada
+  playSoftBeep();
+}
+
+/* ===== MODUL GEÇİŞİ ===== */
+let currentModule="sport";
+["tabSport","tabStudy","tabTopics"].forEach(id=>{
+  document.getElementById(id).onclick=()=>{
+    const mod=id.replace("tab","").toLowerCase();
+    switchModule(mod==="sport"?"sport":mod==="study"?"study":"topics");
+  };
+});
+function switchModule(mod){
+  currentModule=mod;
+  document.getElementById("tabSport").classList.toggle("active",mod==="sport");
+  document.getElementById("tabStudy").classList.toggle("active",mod==="study");
+  document.getElementById("tabTopics").classList.toggle("active",mod==="topics");
+  document.getElementById("mainTitle").textContent=mod==="sport"?"🏋️ Spor Takip":mod==="study"?"📚 Ders Programı":"📖 Konu Takibi";
+  document.getElementById("mainSubtitle").textContent=mod==="sport"?"Max'ın spor programı":mod==="study"?"Görev tabanlı günlük plan":"KPSS 2026 Ortaöğretim müfredatı";
+  if(mod==="sport") renderSportModule();
+  else if(mod==="study") renderStudyModule();
+  else renderTopicsModule();
+}
+
+/* ============================================================
+   SPOR MODÜLÜ
+============================================================ */
+// Süreli hareketler: {saniye cinsinden max süre}
+const TIMED_EXERCISES = {
+  "Stomach Vacuum (Karın Vakumu)": 30,
+  "Plank (Ön Kol Plank)": 45,
+  "Dead Bug (Ölü Böcek)": null,
+  "Mountain Climbers": 30,
+  "Bicycle Crunch (Bisiklet)": null,
+  "Leg Raises / Flutter Kicks": 30
+};
+
+const SPORT_PROGRAM = {
+  core:{title:"🔥 Günlük Core Rutini",badge:"Her gün · 2-3 tur · ~12 dk",note:"Her hareketi sırayla yap, devreyi 2-3 tur tamamla. Tur arasında 30-45 sn dinlen.",exercises:[
+    {name:"Stomach Vacuum (Karın Vakumu)",reps:"3-4 x 15-30 sn tutuş",note:"Ayakta/sırtüstü, nefes ver-karnı içeri çek-tut.",timerSec:30},
+    {name:"Plank (Ön Kol Plank)",reps:"3 x 20-45 sn",note:"Vücut düz çizgi, kalçayı düşürme.",timerSec:45},
+    {name:"Dead Bug (Ölü Böcek)",reps:"3 x 8-12 her taraf",note:"Sırtüstü, kollar-bacaklar yukarı, çapraz indir.",timerSec:null},
+    {name:"Mountain Climbers",reps:"3 x 20-30 sn (hızlı)",note:"Plank pozisyonundan diz çekme.",timerSec:30},
+    {name:"Bicycle Crunch (Bisiklet)",reps:"3 x 10-15 her taraf",note:"Yavaş kontrollü, diz-dirsek karşılaştır.",timerSec:null},
+    {name:"Leg Raises / Flutter Kicks",reps:"3 x 10-15 veya 20-30 sn",note:"Sırtüstü, alt karın için.",timerSec:30}
+  ]},
+  push:{title:"💪 A. Push Günü",badge:"Göğüs + Omuz + Triceps",note:"Setler arası dinlenme: 60-90 sn.",exercises:[
+    {name:"Dumbbell Floor/Bench Press",reps:"4 x 6-10",note:"",timerSec:null},
+    {name:"Dumbbell Fly",reps:"3 x 8-12",note:"",timerSec:null},
+    {name:"Dumbbell Shoulder Press",reps:"3 x 8-10",note:"",timerSec:null},
+    {name:"Dumbbell Lateral Raise",reps:"3 x 10-15",note:"",timerSec:null},
+    {name:"Dumbbell Overhead Tricep Extension",reps:"4 x 8-12",note:"",timerSec:null},
+    {name:"Dumbbell Kickback / Close Grip Push-up",reps:"3 x 10-12",note:"",timerSec:null}
+  ]},
+  pull:{title:"🏋️ B. Pull Günü",badge:"Sırt + Biceps",note:"Setler arası dinlenme: 60-90 sn.",exercises:[
+    {name:"One-Arm Dumbbell Row",reps:"3 x 8-10 her taraf",note:"",timerSec:null},
+    {name:"Bent Over / Renegade Row",reps:"3 x 8-10",note:"",timerSec:null},
+    {name:"Dumbbell Pullover",reps:"3 x 10-12",note:"",timerSec:null},
+    {name:"Dumbbell Curl",reps:"3 x 8-10",note:"",timerSec:null},
+    {name:"Hammer / Concentration Curl",reps:"3 x 8-10",note:"",timerSec:null}
+  ]}
+};
+
+const SPORT_CYCLE=["push","rest","pull","rest"];
+function sportSecs(idx){const s=SPORT_CYCLE[idx%4];return s==="rest"?["core"]:["core",s];}
+function sportLabel(idx){const s=SPORT_CYCLE[idx%4];return s==="push"?"A":s==="pull"?"B":"Dinlenme";}
+function buildSportDays(){
+  const days=[],dn=["Pzt","Sal","Çrş","Per","Cum","Cmt","Pzr"];
+  for(let w=0;w<4;w++) for(let i=0;i<7;i++){
+    const idx=w*7+i;
+    days.push({key:`g${idx}`,label:`${dn[i]} (H${w+1})`,sections:sportSecs(idx),tag:sportLabel(idx)});
+  }
+  return days;
+}
+const SPORT_DAYS=buildSportDays();
+let sportDay=SPORT_DAYS[0].key, sportWeek=1;
+function sportKey(dk,sk,i){return `spor_${dk}_${sk}_${i}`;}
+
+// Spor zamanlayıcı state: {key, endMs, interval}
+let sportTimers={};
+
+function renderSportModule(){
+  const c=document.getElementById("moduleContainer");
+  c.innerHTML=`<div class="week-tabs" id="swt"></div><div class="day-selector" id="sds"></div><div class="cycle-badge" id="scb"></div><div class="progress-bar"><div class="progress-fill" id="spf"></div></div><div class="progress-text" id="spt">0 / 0</div><div id="sc"></div><button class="reset-btn" id="srb">Bugünü Sıfırla</button>`;
+  renderSWT(); renderSDS(); renderSCB(); renderSC();
+  document.getElementById("srb").onclick=()=>{
+    const d=SPORT_DAYS.find(x=>x.key===sportDay);
+    d.sections.forEach(sk=>SPORT_PROGRAM[sk].exercises.forEach((_,i)=>lsDel(sportKey(sportDay,sk,i))));
+    Object.values(sportTimers).forEach(t=>clearInterval(t.interval));
+    sportTimers={};
+    renderSC();
+  };
+}
+function renderSWT(){
+  const el=document.getElementById("swt"); el.innerHTML="";
+  [1,2,3,4].forEach(w=>{
+    const b=document.createElement("button");
+    b.className="week-tab"+(w===sportWeek?" active":"");
+    b.textContent=`H${w}`;
+    b.onclick=()=>{ sportWeek=w; sportDay=SPORT_DAYS.find(d=>parseInt(d.key.slice(1))===(w-1)*7).key; renderSWT(); renderSDS(); renderSCB(); renderSC(); };
+    el.appendChild(b);
+  });
+}
+function renderSDS(){
+  const el=document.getElementById("sds"); el.innerHTML="";
+  SPORT_DAYS.filter(d=>Math.floor(parseInt(d.key.slice(1))/7)===sportWeek-1).forEach(d=>{
+    const b=document.createElement("button");
+    b.className="day-btn"+(d.key===sportDay?" active":"");
+    b.textContent=d.label.split(" ")[0];
+    b.onclick=()=>{ sportDay=d.key; renderSDS(); renderSCB(); renderSC(); };
+    el.appendChild(b);
+  });
+}
+function renderSCB(){
+  const d=SPORT_DAYS.find(x=>x.key===sportDay);
+  document.getElementById("scb").innerHTML=`Bugün: <span class="tag">${d.tag}</span>`;
+}
+function renderSC(){
+  const d=SPORT_DAYS.find(x=>x.key===sportDay),c=document.getElementById("sc"); c.innerHTML="";
+  d.sections.forEach(sk=>{
+    const sec=SPORT_PROGRAM[sk],div=document.createElement("div"); div.className="section";
+    div.innerHTML=`<div class="section-header"><span>${sec.title}</span><span class="badge">${sec.badge}</span></div>${sec.note?`<div class="note-box">${sec.note}</div>`:""}`;
+    sec.exercises.forEach((ex,i)=>{
+      const k=sportKey(sportDay,sk,i),chk=ls(k)==="true";
+      const row=document.createElement("div"); row.className="exercise"+(chk?" checked":"");
+      const id=`scb_${sk}_${i}`;
+      row.innerHTML=`<div class="ex-row"><input type="checkbox" id="${id}" ${chk?"checked":""}><label for="${id}"><div class="ex-name">${ex.name}</div><div class="ex-reps">${ex.reps}</div>${ex.note?`<div class="ex-note">${ex.note}</div>`:""}</label></div>`;
+
+      // Süreli hareket zamanlayıcı
+      if(ex.timerSec){
+        const tid=`st_${sk}_${i}`;
+        const timerDiv=document.createElement("div"); timerDiv.className="sport-timer";
+        timerDiv.innerHTML=`<span class="sport-timer-display idle" id="${tid}">${formatTime(ex.timerSec)}</span><button class="st-btn start" id="${tid}_start">▶ Başlat</button><button class="st-btn reset" id="${tid}_reset" style="display:none">↺ Sıfırla</button>`;
+        row.appendChild(timerDiv);
+
+        setTimeout(()=>{
+          const disp=document.getElementById(tid);
+          const startBtn=document.getElementById(`${tid}_start`);
+          const resetBtn=document.getElementById(`${tid}_reset`);
+          if(!disp||!startBtn) return;
+
+          startBtn.onclick=()=>{
+            if(sportTimers[tid]){ clearInterval(sportTimers[tid].interval); delete sportTimers[tid]; }
+            requestWakeLock();
+            const endMs=Date.now()+ex.timerSec*1000;
+            disp.className="sport-timer-display running";
+            startBtn.style.display="none"; resetBtn.style.display="";
+            const interval=setInterval(()=>{
+              const rem=Math.max(0,Math.round((endMs-Date.now())/1000));
+              disp.textContent=formatTime(rem);
+              if(rem<=0){
+                clearInterval(interval); delete sportTimers[tid];
+                disp.className="sport-timer-display done"; disp.textContent="Bitti! ✓";
+                startBtn.textContent="↺ Tekrar"; startBtn.style.display="";
+                startAlarm(ex.name); releaseWakeLock();
+              }
+            },1000);
+            sportTimers[tid]={interval,endMs};
+          };
+          resetBtn.onclick=()=>{
+            if(sportTimers[tid]){ clearInterval(sportTimers[tid].interval); delete sportTimers[tid]; }
+            disp.className="sport-timer-display idle"; disp.textContent=formatTime(ex.timerSec);
+            startBtn.textContent="▶ Başlat"; startBtn.style.display=""; resetBtn.style.display="none";
+            releaseWakeLock();
+          };
+        },0);
+      }
+
+      row.querySelector("input").onchange=(e)=>{
+        lsSet(k,e.target.checked);
+        row.classList.toggle("checked",e.target.checked);
+        updateSP();
+      };
+      div.appendChild(row);
+    });
+    c.appendChild(div);
+  });
+  updateSP();
+}
+function updateSP(){
+  const d=SPORT_DAYS.find(x=>x.key===sportDay); let tot=0,dn=0;
+  d.sections.forEach(sk=>SPORT_PROGRAM[sk].exercises.forEach((_,i)=>{ tot++; if(ls(sportKey(sportDay,sk,i))==="true") dn++; }));
+  const pf=document.getElementById("spf"),pt=document.getElementById("spt");
+  if(pf) pf.style.width=(tot?Math.round(dn/tot*100):0)+"%"; if(pt) pt.textContent=`${dn} / ${tot} tamamlandı`;
+}
+
+/* ============================================================
+   DERS MODÜLÜ
+============================================================ */
+const ROTATE=["Tarih","Coğrafya","Vatandaşlık","Genel Kültür"];
+function rotateDers(idx){return ROTATE[idx%ROTATE.length];}
+
+function buildStudyBlocks(dayIdx){
+  const s=rotateDers(dayIdx);
+  return [
+    {id:"b0",time:"⏰",name:"Uyan / Toparlan",type:"break",note:"15 dk",dur:15},
+    {id:"b1",time:"🚶",name:"Sabah Yürüyüşü",type:"sport",note:"Aç karnına, 60 dk",dur:60},
+    {id:"b2",time:"🍳",name:"Kahvaltı",type:"meal",note:"",dur:30},
+    {id:"b3",time:"📖",name:"Türkçe / Matematik (1a)",type:"study",note:"Konu anlatım + soru çözüm · 45 dk",dur:45},
+    {id:"b4",time:"☕",name:"Mola",type:"break",note:"",dur:15},
+    {id:"b5",time:"📖",name:"Türkçe / Matematik (1b)",type:"study",note:"Aynı ders devam · 45 dk",dur:45},
+    {id:"b6",time:"☕",name:"Mola",type:"break",note:"",dur:15},
+    {id:"b7",time:"📖",name:"Türkçe / Matematik (2a)",type:"study",note:"Diğer ders · 45 dk",dur:45},
+    {id:"b8",time:"☕",name:"Mola",type:"break",note:"",dur:15},
+    {id:"b9",time:"🏋️",name:"Spor (Core + A/B)",type:"sport",note:"Spor sekmesine bak",dur:45},
+    {id:"b10",time:"☕",name:"Mola",type:"break",note:"",dur:15},
+    {id:"b11",time:"📖",name:"Türkçe / Matematik (2b)",type:"study",note:"Aynı ders devam · 45 dk",dur:45},
+    {id:"b12",time:"☕",name:"Mola",type:"break",note:"",dur:15},
+    {id:"b13",time:"📖",name:`${s} (3a)`,type:"study",note:"Konu anlatım + soru çözüm · 45 dk",dur:45},
+    {id:"b14",time:"☕",name:"Mola",type:"break",note:"",dur:15},
+    {id:"b15",time:"📖",name:`${s} (3b)`,type:"study",note:"Aynı ders devam · 45 dk",dur:45},
+    {id:"b16",time:"☕",name:"Mola",type:"break",note:"",dur:15},
+    {id:"b17",time:"📖",name:"Esnek Ders Bloğu",type:"study",note:"Eksik konu / ekstra soru · 45 dk",dur:45,optional:true},
+    {id:"b18",time:"🍽️",name:"Akşam Yemeği",type:"meal",note:"",dur:30},
+    {id:"b19",time:"📖",name:"Esnek Ders Bloğu 2",type:"study",note:"Gerekirse kullan · 45 dk",dur:45,optional:true},
+    {id:"b20",time:"🌙",name:"Günü Toparlama",type:"break",note:"Yarına kısa bakış",dur:30}
+  ];
+}
+
+function buildStudyDays(){
+  const days=[],dn=["Pzt","Sal","Çrş","Per","Cum","Cmt","Pzr"];
+  for(let w=0;w<4;w++) for(let i=0;i<7;i++){
+    const idx=w*7+i;
+    days.push({key:`s${idx}`,label:`${dn[i]} (H${w+1})`,blocks:buildStudyBlocks(idx),subject3:rotateDers(idx)});
+  }
+  return days;
+}
+const STUDY_DAYS=buildStudyDays();
+let studyDay=STUDY_DAYS[0].key, studyWeek=1;
+function studyKey(dk,bi){return `ders_${dk}_${bi}`;}
+
+// Aktif ders zamanlayıcısı (tek seferde 1 tane aktif)
+let dersTimer=null; // {blockId, dayKey, endMs, paused, remaining, interval}
+
+function renderStudyModule(){
+  const c=document.getElementById("moduleContainer");
+  c.innerHTML=`<div class="week-tabs" id="dwt"></div><div class="day-selector" id="dds"></div><div class="cycle-badge" id="dcb"></div><div class="progress-bar"><div class="progress-fill" id="dpf"></div></div><div class="progress-text" id="dpt">0 / 0</div><div id="dc"></div><button class="reset-btn" id="drb">Bugünü Sıfırla</button>`;
+  renderDWT(); renderDDS(); renderDCB(); renderDC();
+  document.getElementById("drb").onclick=()=>{
+    const d=STUDY_DAYS.find(x=>x.key===studyDay);
+    d.blocks.forEach(b=>lsDel(studyKey(studyDay,b.id)));
+    if(dersTimer){ clearInterval(dersTimer.interval); dersTimer=null; releaseWakeLock(); }
+    renderDC();
+  };
+}
+function renderDWT(){
+  const el=document.getElementById("dwt"); el.innerHTML="";
+  [1,2,3,4].forEach(w=>{
+    const b=document.createElement("button");
+    b.className="week-tab"+(w===studyWeek?" active":"");
+    b.textContent=`H${w}`;
+    b.onclick=()=>{ studyWeek=w; studyDay=STUDY_DAYS.find(d=>parseInt(d.key.slice(1))===(w-1)*7).key; renderDWT(); renderDDS(); renderDCB(); renderDC(); };
+    el.appendChild(b);
+  });
+}
+function renderDDS(){
+  const el=document.getElementById("dds"); el.innerHTML="";
+  STUDY_DAYS.filter(d=>Math.floor(parseInt(d.key.slice(1))/7)===studyWeek-1).forEach(d=>{
+    const b=document.createElement("button");
+    b.className="day-btn"+(d.key===studyDay?" active":"");
+    b.textContent=d.label.split(" ")[0];
+    b.onclick=()=>{ studyDay=d.key; renderDDS(); renderDCB(); renderDC(); };
+    el.appendChild(b);
+  });
+}
+function renderDCB(){
+  const d=STUDY_DAYS.find(x=>x.key===studyDay);
+  document.getElementById("dcb").innerHTML=`3. Blok: <span class="tag">${d.subject3}</span>`;
+}
+
+function formatTime(sec){
+  const m=Math.floor(sec/60),s=sec%60;
+  return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+}
+
+function renderDC(){
+  const day=STUDY_DAYS.find(x=>x.key===studyDay),c=document.getElementById("dc"); c.innerHTML="";
+  const sec=document.createElement("div"); sec.className="section";
+  sec.innerHTML=`<div class="section-header"><span>📅 Günlük Plan</span><span class="badge">Görev tabanlı · esnek</span></div>`;
+  day.blocks.forEach(b=>{
+    const k=studyKey(studyDay,b.id),chk=ls(k)==="true";
+    const isActive=dersTimer&&dersTimer.dayKey===studyDay&&dersTimer.blockId===b.id;
+    const row=document.createElement("div");
+    row.className=`block block-type-${b.type}${b.optional?" optional":""}${chk?" checked":""}`;
+    row.innerHTML=`<div class="block-inner"><input type="checkbox" id="db_${b.id}" ${chk?"checked":""}><label for="db_${b.id}"><div class="block-time">${b.time} ${b.dur} dk</div><div class="block-name">${b.name}</div>${b.note?`<div class="block-note">${b.note}</div>`:""}</label></div>`;
+
+    // Zamanlayıcı alanı
+    const timerDiv=document.createElement("div"); timerDiv.className="ders-timer"; timerDiv.id=`dt_${b.id}`;
+    if(!chk && !isActive){
+      timerDiv.innerHTML=`<div class="dt-hint">✓ tikleyince zamanlayıcı başlar</div>`;
+    } else {
+      const rem=isActive?(dersTimer.paused?dersTimer.remaining:Math.max(0,Math.round((dersTimer.endMs-Date.now())/1000))):0;
+      const state=isActive?(dersTimer.paused?"paused":"running"):"done";
+      timerDiv.innerHTML=`<div class="ders-timer-top">
+        <span class="ders-timer-display ${state}" id="dtd_${b.id}">${isActive?formatTime(rem):"✓"}</span>
+        ${isActive&&!dersTimer.paused?`<button class="dt-btn pause" id="dtp_${b.id}">⏸ Durdur</button>`:""}
+        ${isActive&&dersTimer.paused?`<button class="dt-btn resume" id="dtr_${b.id}">▶ Devam</button>`:""}
+        ${isActive?`<button class="dt-btn snooze" id="dts_${b.id}">+10 dk</button>`:""}
+      </div>`;
+    }
+    row.appendChild(timerDiv);
+
+    const cb=row.querySelector("input");
+    cb.onchange=(e)=>{
+      lsSet(k,e.target.checked);
+      row.classList.toggle("checked",e.target.checked);
+      updateDP();
+      if(e.target.checked){
+        startDersTimer(b,day.key,row);
+      } else {
+        if(dersTimer&&dersTimer.blockId===b.id){ clearInterval(dersTimer.interval); dersTimer=null; releaseWakeLock(); }
+        timerDiv.innerHTML=`<div class="dt-hint">✓ tikleyince zamanlayıcı başlar</div>`;
+      }
+    };
+
+    // Buton listener'ları (render sonrası ekle)
+    setTimeout(()=>{
+      const pauseBtn=document.getElementById(`dtp_${b.id}`);
+      const resumeBtn=document.getElementById(`dtr_${b.id}`);
+      const snoozeBtn=document.getElementById(`dts_${b.id}`);
+      if(pauseBtn) pauseBtn.onclick=()=>pauseDersTimer(b,row);
+      if(resumeBtn) resumeBtn.onclick=()=>resumeDersTimer(b,row);
+      if(snoozeBtn) snoozeBtn.onclick=()=>{
+        if(!dersTimer) return;
+        if(dersTimer.paused) dersTimer.remaining+=600;
+        else dersTimer.endMs+=600000;
+        showToast("+10 dk eklendi");
+        refreshDersTimerDisplay(b,row);
+      };
+      if(isActive&&!dersTimer.paused) tickDers(b,row);
+    },0);
+
+    sec.appendChild(row);
+  });
+  c.appendChild(sec);
+  updateDP();
+}
+
+function startDersTimer(b,dayKey,row){
+  if(dersTimer){ clearInterval(dersTimer.interval); }
+  requestWakeLock();
+  dersTimer={blockId:b.id,dayKey,endMs:Date.now()+b.dur*60000,paused:false,remaining:b.dur*60,interval:null};
+  showToast(`⏱ ${b.name} — ${b.dur} dk başladı`);
+  refreshDersTimerDisplay(b,row);
+  tickDers(b,row);
+}
+function pauseDersTimer(b,row){
+  if(!dersTimer) return;
+  clearInterval(dersTimer.interval); dersTimer.interval=null;
+  dersTimer.remaining=Math.max(0,Math.round((dersTimer.endMs-Date.now())/1000));
+  dersTimer.paused=true;
+  refreshDersTimerDisplay(b,row);
+}
+function resumeDersTimer(b,row){
+  if(!dersTimer||!dersTimer.paused) return;
+  dersTimer.endMs=Date.now()+dersTimer.remaining*1000;
+  dersTimer.paused=false;
+  refreshDersTimerDisplay(b,row);
+  tickDers(b,row);
+}
+function tickDers(b,row){
+  if(dersTimer.interval) clearInterval(dersTimer.interval);
+  dersTimer.interval=setInterval(()=>{
+    if(!dersTimer||dersTimer.paused) return;
+    const rem=Math.max(0,Math.round((dersTimer.endMs-Date.now())/1000));
+    const disp=document.getElementById(`dtd_${b.id}`);
+    if(disp) disp.textContent=formatTime(rem);
+    if(rem<=0){
+      clearInterval(dersTimer.interval); dersTimer=null;
+      startAlarm(b.name);
+      if(disp){ disp.textContent="Bitti! ✓"; disp.className="ders-timer-display done"; }
+    }
+  },1000);
+}
+function refreshDersTimerDisplay(b,row){
+  if(!dersTimer) return;
+  const rem=dersTimer.paused?dersTimer.remaining:Math.max(0,Math.round((dersTimer.endMs-Date.now())/1000));
+  const state=dersTimer.paused?"paused":"running";
+  const td=row.querySelector(".ders-timer");
+  if(!td) return;
+  td.innerHTML=`<div class="ders-timer-top">
+    <span class="ders-timer-display ${state}" id="dtd_${b.id}">${formatTime(rem)}</span>
+    ${!dersTimer.paused?`<button class="dt-btn pause" id="dtp_${b.id}">⏸ Durdur</button>`:""}
+    ${dersTimer.paused?`<button class="dt-btn resume" id="dtr_${b.id}">▶ Devam</button>`:""}
+    <button class="dt-btn snooze" id="dts_${b.id}">+10 dk</button>
+  </div>`;
+  setTimeout(()=>{
+    const p=document.getElementById(`dtp_${b.id}`),r=document.getElementById(`dtr_${b.id}`),s=document.getElementById(`dts_${b.id}`);
+    if(p) p.onclick=()=>pauseDersTimer(b,row);
+    if(r) r.onclick=()=>resumeDersTimer(b,row);
+    if(s) s.onclick=()=>{
+      if(dersTimer.paused) dersTimer.remaining+=600;
+      else dersTimer.endMs+=600000;
+      showToast("+10 dk eklendi");
+      refreshDersTimerDisplay(b,row);
+    };
+    if(!dersTimer.paused) tickDers(b,row);
+  },0);
+}
+function updateDP(){
+  const day=STUDY_DAYS.find(x=>x.key===studyDay); let tot=0,dn=0;
+  day.blocks.forEach(b=>{ tot++; if(ls(studyKey(studyDay,b.id))==="true") dn++; });
+  const pf=document.getElementById("dpf"),pt=document.getElementById("dpt");
+  if(pf) pf.style.width=(tot?Math.round(dn/tot*100):0)+"%"; if(pt) pt.textContent=`${dn} / ${tot} tamamlandı`;
+}
+
+/* ============================================================
+   KONU TAKİBİ
+============================================================ */
+const KPSS=[
+  {id:"turkce",icon:"📖",name:"Türkçe",soru:"30 soru",topics:[
+    {id:"t1",name:"Sözcükte Anlam",soru:"~2 soru"},
+    {id:"t2",name:"Cümlede Anlam",soru:"~2 soru"},
+    {id:"t3",name:"Paragraf (Ana Fikir, Başlık, Boşluk, Sıralama)",soru:"~15 soru"},
+    {id:"t4",name:"Sözel Mantık Soruları",soru:"~4 soru"},
+    {id:"t5",name:"Sözcük Türleri",soru:"dil bilgisi"},
+    {id:"t6",name:"Sözcükte Yapı (Ekler, Kökler)",soru:"dil bilgisi"},
+    {id:"t7",name:"Cümlenin Ögeleri",soru:"dil bilgisi"},
+    {id:"t8",name:"Cümle Türleri",soru:"dil bilgisi"},
+    {id:"t9",name:"Fiiller ve Fiilimsiler",soru:"dil bilgisi"},
+    {id:"t10",name:"Ses Bilgisi ve Ses Olayları",soru:"~1 soru"},
+    {id:"t11",name:"Yazım Kuralları",soru:"~1 soru"},
+    {id:"t12",name:"Noktalama İşaretleri",soru:"~1 soru"},
+    {id:"t13",name:"Anlatım Bozuklukları",soru:"~1 soru"}
+  ]},
+  {id:"mat",icon:"📐",name:"Matematik",soru:"30 soru",topics:[
+    {id:"m1",name:"Sayılar ve Sayı Sistemleri",soru:"temel"},
+    {id:"m2",name:"Tam Sayılar ve Rasyonel Sayılar",soru:"~2 soru"},
+    {id:"m3",name:"Köklü ve Üslü Sayılar",soru:"~2 soru"},
+    {id:"m4",name:"Oran - Orantı",soru:"~2 soru"},
+    {id:"m5",name:"Yüzdeler ve Faiz",soru:"~2 soru"},
+    {id:"m6",name:"Dört İşlem ve Problemler",soru:"~8 soru"},
+    {id:"m7",name:"Yaş, Hız, İş, Karışım Problemleri",soru:"~4 soru"},
+    {id:"m8",name:"Matematiksel İlişkilerden Yararlanma",soru:"~4 soru"},
+    {id:"m9",name:"Sayısal Mantık Soruları",soru:"~3 soru"},
+    {id:"m10",name:"Tablo ve Grafik Yorumlama",soru:"~3 soru"},
+    {id:"m11",name:"Temel Geometri (Açılar, Üçgen, Dörtgen)",soru:"~2 soru"},
+    {id:"m12",name:"Alan - Çevre - Hacim",soru:"~2 soru"}
+  ]},
+  {id:"tarih",icon:"📜",name:"Tarih",soru:"27 soru",topics:[
+    {id:"h1",name:"İlk Türk Devletleri (Hunlar, Göktürkler, Uygurlar)",soru:"~1 soru"},
+    {id:"h2",name:"Türk-İslam Devletleri (Karahanlılar, Gazneliler, Büyük Selçuklular)",soru:"~1 soru"},
+    {id:"h3",name:"Anadolu Selçukluları ve Türkiye Tarihi",soru:"~1 soru"},
+    {id:"h4",name:"Osmanlı Kuruluş ve Yükselme Dönemi",soru:"~2 soru"},
+    {id:"h5",name:"Osmanlı Duraklama ve Gerileme Dönemi",soru:"~1 soru"},
+    {id:"h6",name:"Osmanlı Dağılma Dönemi ve Islahat Hareketleri",soru:"~1 soru"},
+    {id:"h7",name:"I. Dünya Savaşı ve Mondros Mütarekesi",soru:"~1 soru"},
+    {id:"h8",name:"Kurtuluş Savaşı Hazırlık Dönemi ve Cemiyetler",soru:"~1 soru"},
+    {id:"h9",name:"Kurtuluş Savaşı Cepheleri ve Muharebeler",soru:"~2 soru"},
+    {id:"h10",name:"Lozan Antlaşması ve Sonuçları",soru:"~2 soru"},
+    {id:"h11",name:"Atatürk İlkeleri (6 İlke)",soru:"~4 soru"},
+    {id:"h12",name:"Atatürk İnkılapları (Siyasi, Hukuki, Eğitim, Ekonomi)",soru:"~5 soru"},
+    {id:"h13",name:"Çok Partili Hayata Geçiş ve Çağdaş Türk Tarihi",soru:"~1 soru"},
+    {id:"h14",name:"II. Dünya Savaşı ve Soğuk Savaş Dönemi",soru:"~2 soru"},
+    {id:"h15",name:"Türkiye'nin Dış Politikası (NATO, AB süreci)",soru:"~2 soru"}
+  ]},
+  {id:"cografya",icon:"🗺️",name:"Coğrafya",soru:"18 soru",topics:[
+    {id:"c1",name:"Türkiye'nin Coğrafi Konumu ve Önemi",soru:"~1 soru"},
+    {id:"c2",name:"Türkiye'nin Yer Şekilleri (Dağlar, Ovalar, Platolar)",soru:"~2 soru"},
+    {id:"c3",name:"Türkiye'nin İklimi ve İklim Tipleri",soru:"~2 soru"},
+    {id:"c4",name:"Türkiye'nin Bitki Örtüsü ve Toprak Tipleri",soru:"~1 soru"},
+    {id:"c5",name:"Nüfus ve Yerleşme (Nüfus Dağılımı, Göç)",soru:"~2 soru"},
+    {id:"c6",name:"Tarım (Ürünler, Tarım Bölgeleri)",soru:"~2 soru"},
+    {id:"c7",name:"Hayvancılık, Ormancılık, Balıkçılık",soru:"~1 soru"},
+    {id:"c8",name:"Madencilik ve Enerji Kaynakları",soru:"~1 soru"},
+    {id:"c9",name:"Sanayi ve Ticaret",soru:"~2 soru"},
+    {id:"c10",name:"Türkiye'nin 7 Coğrafi Bölgesi",soru:"~2 soru"},
+    {id:"c11",name:"Harita Bilgisi, Grafik ve Tablo Yorumlama",soru:"~1 soru"},
+    {id:"c12",name:"Dünya Coğrafyası (Genel Coğrafi Bilgiler)",soru:"~1 soru"}
+  ]},
+  {id:"vatandaslik",icon:"⚖️",name:"Vatandaşlık",soru:"9 soru",topics:[
+    {id:"v1",name:"Hukuka Giriş (Temel Kavramlar, Hukuk Dalları)",soru:"~1 soru"},
+    {id:"v2",name:"T.C. Anayasası — Genel Esaslar (Md. 1-11)",soru:"~1 soru"},
+    {id:"v3",name:"Temel Haklar ve Özgürlükler",soru:"~2 soru"},
+    {id:"v4",name:"Yasama — TBMM (Görev ve Yetkileri)",soru:"~1 soru"},
+    {id:"v5",name:"Yürütme — Cumhurbaşkanlığı Hükümet Sistemi",soru:"~1 soru"},
+    {id:"v6",name:"Yargı (Anayasa Mahkemesi, Yargıtay, Danıştay...)",soru:"~1 soru"},
+    {id:"v7",name:"Yerel Yönetimler (Belediye, İl Özel İdare, Köy)",soru:"~1 soru"},
+    {id:"v8",name:"Kamu Personel Hukuku (Memur Statüsü)",soru:"~1 soru"}
+  ]},
+  {id:"guncel",icon:"🌍",name:"Güncel Bilgiler",soru:"6 soru",topics:[
+    {id:"g1",name:"Türkiye'nin Dış Politikası ve Uluslararası İlişkiler"},
+    {id:"g2",name:"Türkiye'deki Önemli Gelişmeler (Son 1 Yıl)"},
+    {id:"g3",name:"Dünya'daki Önemli Gelişmeler (Son 1 Yıl)"},
+    {id:"g4",name:"Ekonomik Gelişmeler (Kalkınma, Bütçe, TÜİK)"},
+    {id:"g5",name:"Bilim, Teknoloji, Spor ve Kültür"}
+  ]}
+];
+
+function topicKey(sid,tid){return `konu_${sid}_${tid}`;}
+
+function renderTopicsModule(){
+  const c=document.getElementById("moduleContainer"); c.innerHTML="";
+  KPSS.forEach(sub=>{
+    const total=sub.topics.length;
+    const done=sub.topics.filter(t=>ls(topicKey(sub.id,t.id))==="true").length;
+    const finished=done===total;
+    const card=document.createElement("div"); card.className="subject-card";
+    card.innerHTML=`
+      <div class="subject-header" id="sh_${sub.id}">
+        <span class="subject-icon">${sub.icon}</span>
+        <div style="flex:1">
+          <span class="subject-title${finished?" done":""}">${sub.name}</span>
+          ${finished?`<span class="congrats"> ✓ Tamamlandı!</span>`:""}
+          <div class="subject-meta">${sub.soru} · ${done}/${total} konu</div>
+        </div>
+        <span class="subject-arrow" id="sa_${sub.id}">›</span>
+      </div>
+      <div class="topics-list" id="tl_${sub.id}">
+        ${sub.topics.map(t=>{
+          const chk=ls(topicKey(sub.id,t.id))==="true";
+          return `<div class="topic-item">
+            <input type="checkbox" id="ti_${sub.id}_${t.id}" ${chk?"checked":""}>
+            <label class="topic-label${chk?" done":""}" for="ti_${sub.id}_${t.id}">
+              ${t.name}${t.soru?`<span class="topic-soru">${t.soru}</span>`:""}
+            </label>
+          </div>`;
+        }).join("")}
+        <div class="subject-reset-row">
+          <button class="subject-reset-btn" id="sr_${sub.id}">Bu dersi sıfırla</button>
+        </div>
+      </div>`;
+    c.appendChild(card);
+
+    document.getElementById(`sh_${sub.id}`).onclick=()=>{
+      const list=document.getElementById(`tl_${sub.id}`),arrow=document.getElementById(`sa_${sub.id}`);
+      const open=list.classList.toggle("open"); arrow.classList.toggle("open",open);
+    };
+
+    sub.topics.forEach(t=>{
+      const cb=document.getElementById(`ti_${sub.id}_${t.id}`);
+      if(!cb) return;
+      cb.onchange=(e)=>{
+        lsSet(topicKey(sub.id,t.id),e.target.checked);
+        const lbl=document.querySelector(`label[for="ti_${sub.id}_${t.id}"]`);
+        if(lbl) lbl.classList.toggle("done",e.target.checked);
+        const newDone=sub.topics.filter(t2=>ls(topicKey(sub.id,t2.id))==="true").length;
+        if(e.target.checked && newDone===sub.topics.length){
+          showToast(`🎉 ${sub.name} tamamlandı! Tebrikler!`,3500);
+        }
+        // Header'ı güncelle
+        const hdr=document.getElementById(`sh_${sub.id}`);
+        if(hdr){
+          const allDone=sub.topics.every(t2=>ls(topicKey(sub.id,t2.id))==="true");
+          const titleEl=hdr.querySelector(".subject-title");
+          if(titleEl) titleEl.classList.toggle("done",allDone);
+          const congrats=hdr.querySelector(".congrats");
+          if(allDone && !congrats){
+            const sp=document.createElement("span"); sp.className="congrats"; sp.textContent=" ✓ Tamamlandı!";
+            titleEl.insertAdjacentElement("afterend",sp);
+          } else if(!allDone && congrats) congrats.remove();
+          const meta=hdr.querySelector(".subject-meta");
+          if(meta) meta.textContent=`${sub.soru} · ${newDone}/${sub.topics.length} konu`;
+        }
+        const list=document.getElementById(`tl_${sub.id}`),arrow=document.getElementById(`sa_${sub.id}`);
+        if(list) list.classList.add("open"); if(arrow) arrow.classList.add("open");
+      };
+    });
+
+    document.getElementById(`sr_${sub.id}`).onclick=(e)=>{
+      e.stopPropagation();
+      sub.topics.forEach(t=>lsDel(topicKey(sub.id,t.id)));
+      renderTopicsModule();
+      setTimeout(()=>{
+        const list=document.getElementById(`tl_${sub.id}`),arrow=document.getElementById(`sa_${sub.id}`);
+        if(list) list.classList.add("open"); if(arrow) arrow.classList.add("open");
+      },0);
+    };
+  });
+}
+
+/* ===== SERVICE WORKER ===== */
+if("serviceWorker" in navigator){
+  window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
+}
+
+switchModule("sport");
+</script>
+</body>
+</html>
